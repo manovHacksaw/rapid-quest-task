@@ -4,6 +4,8 @@ const path = require('path');
 const express = require("express");
 const messageRoutes = require("./routes/message")
 const cors = require("cors")
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 require('dotenv').config();
 const Message = require('./models/Message'); 
@@ -14,10 +16,21 @@ const PORT = process.env.PORT || 5000;
 
 let data = []; // ✅ this should be an array
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://2xbrt7r7-3000.inc1.devtunnels.ms'
+]
+
 app.use(cors({
-  origin: "http://localhost:3000",
-   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true 
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 app.use(express.json());
 

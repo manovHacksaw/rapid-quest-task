@@ -13,6 +13,7 @@ export default function WhatsAppClone() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [messagesLoading, setMessagesLoading] = useState(false)
+  const [showChat, setShowChat] = useState(false)
 
   // Fetch conversations on component mount
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function WhatsAppClone() {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation._id)
+      setShowChat(true)
     }
   }, [selectedConversation])
 
@@ -79,10 +81,15 @@ export default function WhatsAppClone() {
     }
   }
 
+  const handleBack = () => {
+    setShowChat(false)
+    setSelectedConversation(null)
+  }
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col">
+    <div className="flex h-screen bg-[#111B21] overflow-hidden">
+      {/* Sidebar - Hidden on mobile when chat is open */}
+      <div className={`${showChat ? 'hidden md:flex' : 'flex'} w-full md:w-[400px] lg:w-[420px] flex-col border-r border-[#313D45]`}>
         <ConversationsList
           conversations={conversations}
           selectedConversation={selectedConversation}
@@ -92,14 +99,15 @@ export default function WhatsAppClone() {
         />
       </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Chat Area - Full width on mobile when chat is open */}
+      <div className={`${showChat ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
         <ChatArea
           conversation={selectedConversation}
           messages={messages}
           loading={messagesLoading}
           onSendMessage={sendMessage}
           onRefresh={() => selectedConversation && fetchMessages(selectedConversation._id)}
+          onBack={handleBack}
         />
       </div>
     </div>
