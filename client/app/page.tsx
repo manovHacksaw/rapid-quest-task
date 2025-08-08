@@ -14,6 +14,7 @@ import { ProfilePage } from '@/components/profile-page'
 import { ProfileWelcome } from '@/components/profile-welcome'
 import { MobileBottomNav } from '@/components/mobile-bottom-nav'
 import { MobileStatusBar } from '@/components/mobile-status-bar'
+import { useSocket } from '@/hooks/use-socket'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -29,6 +30,68 @@ export default function WhatsAppClone() {
   const [initialLoading, setInitialLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<ActiveTab>('chats')
   const [mobileActiveTab, setMobileActiveTab] = useState<'chats' | 'updates' | 'communities' | 'calls'>('chats')
+
+  const socket = useSocket();
+
+   useEffect(() => {
+    if (!socket) return
+
+    // Listen for new messages
+    const handleNewMessage = (newMessage: Message) => {
+      console.log('📨 New message received:', newMessage)
+      
+      // Update messages if it's for the current conversation
+      if (selectedConversation && newMessage.wa_id === selectedConversation._id) {
+        setMessages(prev => {
+          // Check if message already exists to avoid duplicates
+          const exists = prev.some(msg => msg.id === newMessage.id)
+          if (exists) return prev
+          return [...prev, newMessage]
+        })
+      }
+
+      // Update all messages for search
+      setAllMessages(prev => {
+        const exists = prev.some(msg => msg.id === newMessage.id)
+        if (exists) return prev
+        return [...prev, newMessage]
+      })
+
+      // Update conversations list
+      fetchConversations()
+    }
+
+    // Listen for message status updates
+    const handleMessageStatusUpdate = (data: { messageId: string, status: string }) => {
+      console.log('🔄 Message status updated:', data)
+      
+      // Update current messages
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, status: data.status }
+            : msg
+        )
+      )
+
+      // Update all messages
+      setAllMessages(prev => 
+        prev.map(msg => 
+          msg.id === data.messageId 
+            ? { ...msg, status: data.status }
+            : msg
+        )
+      )
+    }
+
+    socket.on('newMessage', handleNewMessage)
+    socket.on('messageStatusUpdate', handleMessageStatusUpdate)
+
+    return () => {
+      socket.off('newMessage', handleNewMessage)
+      socket.off('messageStatusUpdate', handleMessageStatusUpdate)
+    }
+  }, [socket, selectedConversation])
 
   // Fetch conversations on component mount
   useEffect(() => {

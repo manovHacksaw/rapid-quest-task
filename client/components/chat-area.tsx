@@ -1,14 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic } from 'lucide-react'
+import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic, Clock } from 'lucide-react'
 import { Conversation, Message } from '@/types/chat'
-import { cn } from '@/lib/utils'
+import { formatTimestamp, cn } from '@/lib/utils'
 import { ConversationSearch } from './conversation-search'
 import { groupMessagesByDate } from '@/lib/utils'
-import { StraightTick } from './ui/straight-tick'
+import { useSocket } from '@/hooks/use-socket'
 
 interface ChatAreaProps {
   conversation: Conversation | null
@@ -18,48 +18,6 @@ interface ChatAreaProps {
   onRefresh: () => void
   onBack?: () => void
 }
-
-const TailOutgoing = () => (
-  <svg
-    viewBox="0 0 8 13"
-    width="8"
-    height="13"
-    className="absolute top-[0.5] -right-[4px] z-50"
-    aria-hidden="true"
-  >
-    <path
-      opacity=".13"
-      d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"
-    ></path>
-    <path
-      fill="#005C4B"
-      d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"
-    ></path>
-  </svg>
-);
-
-// SVG component for the incoming message tail
-const TailIncoming = () => (
-  <svg
-    viewBox="0 0 8 13"
-    width="8"
-    height="13"
-    className="absolute top-[0.6px] -left-[3px]"
-    aria-hidden="true"
-  >
-    <path
-      opacity=".1"
-      transform="scale(-1 1) translate(-8 0)"
-      d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"
-    ></path>
-    <path
-      fill="#202C33"
-      transform="scale(-1 1) translate(-8 0)"
-      d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"
-    ></path>
-  </svg>
-);
-
 
 export function ChatArea({
   conversation,
@@ -71,18 +29,6 @@ export function ChatArea({
 }: ChatAreaProps) {
   const [newMessage, setNewMessage] = useState('')
   const [showSearch, setShowSearch] = useState(false)
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  // Automatically scroll to the bottom when new messages arrive
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollViewport = scrollAreaRef.current.querySelector('div');
-      if (scrollViewport) {
-        scrollViewport.scrollTop = scrollViewport.scrollHeight;
-      }
-    }
-  }, [messages]);
-
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -98,6 +44,23 @@ export function ChatArea({
     }
   }
 
+  const socket = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for new messages
+    socket.on("newMessage", (newMsg) => {
+      if (newMsg.wa_id === conversation?.wa_id) {
+        onRefresh(); // or update local state
+      }
+    });
+
+    return () => {
+      socket.off("newMessage");
+    };
+  }, [socket, conversation?.wa_id, onRefresh]);
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -109,26 +72,18 @@ export function ChatArea({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "sent":
-        return <StraightTick />;
-      case "delivered":
-        return (
-          <div className="flex gap-[2px]">
-            <StraightTick />
-            <StraightTick />
-          </div>
-        );
-      case "read":
-        return (
-          <div className="flex gap-[2px]">
-            <StraightTick color="#53BDEB" />
-            <StraightTick color="#53BDEB" />
-          </div>
-        );
+      case 'sending':
+        return <Clock className="h-3 w-3 text-[#8696A0] animate-pulse" />
+      case 'sent':
+        return <span className="text-[#8696A0] text-xs">✓</span>
+      case 'delivered':
+        return <span className="text-[#8696A0] text-xs">✓✓</span>
+      case 'read':
+        return <span className="text-[#53BDEB] text-xs">✓✓</span>
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   if (!conversation) {
     return (
@@ -157,7 +112,7 @@ export function ChatArea({
           </div>
           <h2 className="text-3xl font-light text-[#E9EDEF] mb-4">WhatsApp Web</h2>
           <p className="text-[#8696A0] text-sm leading-relaxed mb-6">
-            Send and receive messages without keeping your phone online.<br />
+            Send and receive messages without keeping your phone online.<br/>
             Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-[#8696A0]">
@@ -172,7 +127,7 @@ export function ChatArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0B141A]">
+    <div className="flex-1 flex flex-col">
       {/* Chat Header */}
       <div className="whatsapp-header px-4 py-3">
         <div className="flex items-center justify-between">
@@ -232,7 +187,7 @@ export function ChatArea({
       </div>
 
       {/* Messages Area with WhatsApp Background */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 whatsapp-chat-bg-pattern scrollbar-thin">
+      <ScrollArea className="flex-1 whatsapp-chat-bg-pattern scrollbar-thin">
         <div className="p-4">
           {loading ? (
             <div className="space-y-4">
@@ -250,61 +205,44 @@ export function ChatArea({
               <p>No messages in this conversation</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-6">
               {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
                 <div key={date}>
                   {/* Date Header */}
-                  <div className="flex justify-center my-4">
-                    <div className="bg-[#182229] px-3 py-1.5 rounded-lg shadow">
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-[#2A3942] px-3 py-1 rounded-lg">
                       <span className="text-[#8696A0] text-xs font-medium">{date}</span>
                     </div>
                   </div>
-
+                  
                   {/* Messages for this date */}
-                  <div className="space-y-1">
-                    {msgs.map((message, index) => {
-                      const isOutgoing = message.id.startsWith('frontend-');
-                      const prevMessage = msgs[index - 1];
-                      const isFirstInGroup = !prevMessage || (prevMessage.id.startsWith('frontend-') !== isOutgoing);
-
+                  <div className="space-y-2">
+                    {msgs.map((message) => {
+                      const isOutgoing = message.id.startsWith('frontend-')
                       return (
                         <div
                           key={message.id}
                           className={cn(
-                            "flex w-full",
-                            isOutgoing ? "justify-end" : "justify-start",
-                            isFirstInGroup ? "mt-2" : "mt-1"
+                            "flex",
+                            isOutgoing ? "justify-end" : "justify-start"
                           )}
                         >
                           <div
                             className={cn(
-                              "relative max-w-[65%] px-3 py-2 shadow-sm text-white",
+                              "max-w-md px-3 py-2 rounded-lg message-bubble shadow-sm",
                               isOutgoing
-                                ? "bg-[#005C4B] text-[#E9EDEF]"
-                                : "bg-[#202C33] text-[#E9EDEF]",
-                              "rounded-lg",
-                              isOutgoing ?
-                                { 'rounded-tr-sm': !isFirstInGroup } :
-                                { 'rounded-tl-sm': !isFirstInGroup }
+                                ? "outgoing bg-[#005C4B] text-[#E9EDEF]"
+                                : "incoming bg-[#202C33] text-[#E9EDEF]"
                             )}
                           >
-                            {/* Render tail only for the first message in a group */}
-                            {isFirstInGroup && (
-                              isOutgoing ? <TailOutgoing /> : <TailIncoming />
-                            )}
-
-                            <div className="flex flex-col">
-                              <p className="text-sm leading-relaxed" style={{ wordBreak: 'break-word' }}>
-                                {message.text}
-                              </p>
-                              <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0] self-end mt-1">
-                                <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false
-                                })}</span>
-                                {isOutgoing && getStatusIcon(message.status)}
-                              </div>
+                            <p className="text-sm leading-relaxed mb-1">{message.text}</p>
+                            <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0]">
+                              <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                              })}</span>
+                              {isOutgoing && getStatusIcon(message.status)}
                             </div>
                           </div>
                         </div>
@@ -348,7 +286,7 @@ export function ChatArea({
             <Button
               onClick={handleSendMessage}
               size="sm"
-              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-10 w-10 p-0"
+              className="bg-[#25D366] hover:bg-[#128C7E] rounded-full h-10 w-10 p-0"
             >
               <Send className="h-5 w-5" />
             </Button>
@@ -368,8 +306,7 @@ export function ChatArea({
           messages={messages}
           onClose={() => setShowSearch(false)}
           onMessageSelect={(messageId) => {
-            // Placeholder for scrolling to the selected message
-            console.log("Selected message:", messageId);
+            // Handle message selection
             setShowSearch(false)
           }}
         />
