@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const express = require("express");
+const http = require("http")
 const messageRoutes = require("./routes/message")
 const cors = require("cors")
 const { createServer } = require('http');
@@ -12,6 +13,7 @@ const Message = require('./models/Message');
 
 const payloadDir = path.join(__dirname, 'messages'); // Make sure folder is correct
 const app = express();
+const server = http.createServer(app)
 const PORT = process.env.PORT || 5000;
 
 let data = []; // ✅ this should be an array

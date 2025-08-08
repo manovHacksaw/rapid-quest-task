@@ -14,7 +14,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
     { 
       id: 'chats' as const, 
       icon: () => (
-        <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="none">
+        <svg viewBox="0 0 24 24" height="32" width="32" preserveAspectRatio="xMidYMid meet" fill="none">
           <title>chat-filled-refreshed</title>
           <path fillRule="evenodd" clipRule="evenodd" d="M22.0002 6.66667C22.0002 5.19391 20.8062 4 19.3335 4H1.79015C1.01286 4 0.540213 4.86348 0.940127 5.53L3.00016 9V17.3333C3.00016 18.8061 4.19406 20 5.66682 20H19.3335C20.8062 20 22.0002 18.8061 22.0002 17.3333V6.66667ZM7.00016 10C7.00016 9.44772 7.44787 9 8.00016 9H17.0002C17.5524 9 18.0002 9.44772 18.0002 10C18.0002 10.5523 17.5524 11 17.0002 11H8.00016C7.44787 11 7.00016 10.5523 7.00016 10ZM8.00016 13C7.44787 13 7.00016 13.4477 7.00016 14C7.00016 14.5523 7.44787 15 8.00016 15H14.0002C14.5524 15 15.0002 14.5523 15.0002 14C15.0002 13.4477 14.5524 13 14.0002 13H8.00016Z" fill="currentColor"></path>
         </svg>
@@ -24,7 +24,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
     { 
       id: 'status' as const, 
       icon: () => (
-        <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="none">
+        <svg viewBox="0 0 24 24" height="32" width="32" preserveAspectRatio="xMidYMid meet" fill="none">
           <title>status-refreshed</title>
           <path d="M13.5628 3.13661C13.6587 2.59272 14.1794 2.22464 14.711 2.37436C15.7905 2.6784 16.8135 3.16254 17.736 3.80856C18.9323 4.64623 19.9305 5.73573 20.6606 7.00048C21.3907 8.26524 21.8349 9.67455 21.962 11.1294C22.0601 12.2513 21.9677 13.3794 21.6911 14.4662C21.5549 15.0014 20.9758 15.2682 20.4568 15.0792C19.9378 14.8903 19.677 14.317 19.7998 13.7785C19.9843 12.9693 20.0422 12.1343 19.9696 11.3035C19.8679 10.1396 19.5126 9.01217 18.9285 8.00036C18.3444 6.98856 17.5458 6.11696 16.5888 5.44682C15.9057 4.96842 15.1536 4.60099 14.3606 4.35609C13.8329 4.19312 13.4669 3.6805 13.5628 3.13661Z" fill="currentColor"></path>
           <path d="M18.8944 17.785C19.3175 18.14 19.3759 18.7749 18.9804 19.1604C18.1774 19.9433 17.2466 20.5872 16.2259 21.0631C14.9023 21.6802 13.4597 22 11.9993 21.9999C10.5389 21.9998 9.09633 21.6798 7.77287 21.0625C6.7522 20.5864 5.82149 19.9424 5.01855 19.1594C4.62314 18.7739 4.68167 18.1389 5.10479 17.784C5.52792 17.4291 6.15484 17.4898 6.55976 17.8654C7.16828 18.4298 7.86245 18.8974 8.61829 19.25C9.67707 19.7438 10.8312 19.9998 11.9994 19.9999C13.1677 20 14.3218 19.7442 15.3807 19.2505C16.1366 18.898 16.8308 18.4304 17.4394 17.8661C17.8444 17.4906 18.4713 17.43 18.8944 17.785Z" fill="currentColor"></path>
@@ -37,7 +37,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
     { 
       id: 'channels' as const, 
       icon: () => (
-        <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="none">
+        <svg viewBox="0 0 24 24" height="32" width="32" preserveAspectRatio="xMidYMid meet" fill="none">
           <title>newsletter-outline</title>
           <path fillRule="evenodd" clipRule="evenodd" d="M15.8301 8.63404C16.3081 8.35745 16.9198 8.52076 17.1964 8.9988C17.7077 9.88244 18 10.9086 18 12C18 13.0914 17.7077 14.1176 17.1964 15.0012C16.9198 15.4792 16.3081 15.6425 15.8301 15.366C15.352 15.0894 15.1887 14.4776 15.4653 13.9996C15.8052 13.4122 16 12.7304 16 12C16 11.2696 15.8052 10.5878 15.4653 10.0004C15.1887 9.52237 15.352 8.91063 15.8301 8.63404ZM8.16995 8.63404C8.64798 8.91063 8.81129 9.52237 8.5347 10.0004C8.19484 10.5878 8 11.2696 8 12C8 12.7304 8.19484 13.4122 8.5347 13.9996C8.81129 14.4776 8.64798 15.0894 8.16995 15.366C7.69191 15.6425 7.08017 15.4792 6.80358 15.0012C6.29231 14.1176 6 13.0914 6 12C6 10.9086 6.29231 9.88244 6.80358 8.9988C7.08017 8.52076 7.69191 8.35745 8.16995 8.63404Z" fill="currentColor"></path>
           <path d="M13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12Z" fill="currentColor"></path>
@@ -49,7 +49,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
     { 
       id: 'communities' as const, 
       icon: () => (
-        <svg viewBox="0 0 32 32" height="32" width="32" preserveAspectRatio="xMidYMid meet" fill="none">
+        <svg viewBox="0 0 20 20" height="20" width="20" preserveAspectRatio="xMidYMid meet" fill="none">
           <title>community-refreshed-32</title>
           <path d="M7.85445 17.0075C7.73851 17.0026 7.62033 17 7.50003 17C6.60797 17 5.83268 17.1426 5.22106 17.3148C4.69554 17.4627 4.0988 17.7054 3.5974 18.0919C3.08634 18.4858 2.62143 19.0755 2.52966 19.8877C2.48679 20.2672 2.50003 21.0796 2.51038 21.5399C2.52882 22.3601 3.20095 23 4.00656 23H7.35217C7.15258 22.5784 7.03459 22.1084 7.01993 21.6087C7.01572 21.4651 7.00943 21.25 7.00505 21H4.50165C4.49773 20.6191 4.50034 20.2599 4.51702 20.1123C4.5308 19.9903 4.59776 19.846 4.81844 19.6759C5.04878 19.4983 5.38363 19.3468 5.7631 19.2399C6.12883 19.137 6.57191 19.0478 7.07407 19.0142C7.12499 18.6798 7.20695 18.3652 7.31207 18.0721C7.45559 17.6719 7.64219 17.3186 7.85445 17.0075Z" fill="currentColor"></path>
           <path d="M24.6478 23H27.9935C28.7991 23 29.4712 22.3601 29.4897 21.5399C29.5 21.0796 29.5133 20.2672 29.4704 19.8877C29.3786 19.0755 28.9137 18.4858 28.4027 18.0919C27.9013 17.7054 27.3045 17.4627 26.779 17.3148C26.1674 17.1426 25.3921 17 24.5 17C24.3797 17 24.2615 17.0026 24.1456 17.0075C24.3578 17.3186 24.5444 17.6719 24.6879 18.0721C24.793 18.3652 24.875 18.6798 24.9259 19.0142C25.4281 19.0478 25.8712 19.1369 26.237 19.2399C26.6164 19.3468 26.9513 19.4983 27.1816 19.6759C27.4023 19.846 27.4693 19.9903 27.483 20.1123C27.4997 20.2599 27.5023 20.6191 27.4984 21H24.9949C24.9906 21.25 24.9843 21.4651 24.9801 21.6087C24.9654 22.1084 24.8474 22.5784 24.6478 23Z" fill="currentColor"></path>
@@ -69,7 +69,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
   ]
 
   return (
-    <div className="w-16 bg-[#202C33] border-r border-[#313D45] flex flex-col items-center py-4">
+    <div className="w-20 bg-[#202C33] h-full border-r border-[#313D45] flex flex-col items-center py-4">
       {/* Unread count badge
       {unreadCount > 0 && (
         <div className="relative mb-4">
@@ -90,7 +90,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
             size="sm"
             onClick={() => onTabChange(item.id)}
             className={cn(
-              "h-12 w-12 p-0 rounded-lg transition-colors cursor-pointer",
+              "h-14 w-14 mx-auto my-auto p-0 rounded-lg transition-colors cursor-pointer",
               activeTab === item.id
                 ? "bg-[#2A3942] text-[#25D366]"
                 : "text-[#8696A0] hover:bg-[#2A3942] hover:text-[#E9EDEF]"
@@ -111,7 +111,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
             size="sm"
             onClick={() => onTabChange(item.id)}
             className={cn(
-              "h-14 w-14 p-0 rounded-lg transition-colors cursor-pointer",
+              "h-16 w-16 p-0 rounded-lg transition-colors cursor-pointer",
               activeTab === item.id
                 ? "bg-[#2A3942] text-[#25D366]"
                 : "text-[#8696A0] hover:bg-[#2A3942] hover:text-[#E9EDEF]"
@@ -119,13 +119,13 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
             title={item.label}
           >
             {item.id === 'profile' ? (
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-[#6B7C85] text-[#E9EDEF] text-xs">
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-[#6B7C85] text-[#E9EDEF] text-sm">
                   ME
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <item.icon className="h-6 w-6" />
+              <item.icon className="h-8 w-8" />
             )}
           </Button>
         ))}

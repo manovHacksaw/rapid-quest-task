@@ -49,7 +49,7 @@ export function formatMessageDate(timestamp: string | number): string {
   }
 }
 
-export function truncateMessage(message: string, maxLength: number = 50): string {
+export function truncateMessage(message: string, maxLength: number = 70): string {
   if (message.length <= maxLength) return message
   return message.substring(0, maxLength) + '...'
 }

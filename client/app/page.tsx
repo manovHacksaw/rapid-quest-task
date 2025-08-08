@@ -12,6 +12,8 @@ import { SettingsPage } from '@/components/settings-page'
 import { SettingsWelcome } from '@/components/settings-welcome'
 import { ProfilePage } from '@/components/profile-page'
 import { ProfileWelcome } from '@/components/profile-welcome'
+import { MobileBottomNav } from '@/components/mobile-bottom-nav'
+import { MobileStatusBar } from '@/components/mobile-status-bar'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -26,6 +28,7 @@ export default function WhatsAppClone() {
   const [showChat, setShowChat] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<ActiveTab>('chats')
+  const [mobileActiveTab, setMobileActiveTab] = useState<'chats' | 'updates' | 'communities' | 'calls'>('chats')
 
   // Fetch conversations on component mount
   useEffect(() => {
@@ -123,6 +126,25 @@ export default function WhatsAppClone() {
     }
   }
 
+  const handleMobileTabChange = (tab: 'chats' | 'updates' | 'communities' | 'calls') => {
+    setMobileActiveTab(tab)
+    // Map mobile tabs to main tabs
+    switch (tab) {
+      case 'chats':
+        setActiveTab('chats')
+        break
+      case 'updates':
+        setActiveTab('status')
+        break
+      case 'communities':
+        setActiveTab('communities')
+        break
+      case 'calls':
+        // Handle calls tab - could be a separate feature
+        break
+    }
+  }
+
   if (initialLoading) {
     return <WhatsAppLoading />
   }
@@ -207,18 +229,33 @@ export default function WhatsAppClone() {
     }
   }
 
+  // Calculate real unread count
+  const unreadCount = conversations.filter(conv => conv.status === 'unread').length
+
   return (
     <div className="flex h-screen bg-[#111B21] overflow-hidden">
-      {/* Left Navigation */}
-      <LeftNavigation
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        unreadCount={99}
-      />
+      {/* Left Navigation - Hidden on mobile */}
+      <div className="hidden md:block">
+        <LeftNavigation
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          unreadCount={unreadCount}
+        />
+      </div>
 
       {/* Main Content */}
-      <div className="flex flex-1">
-        {renderMainContent()}
+      <div className="flex flex-1 flex-col md:flex-row">
+        <div className="flex flex-1">
+          {renderMainContent()}
+        </div>
+        
+        {/* Mobile Bottom Navigation */}
+        <MobileBottomNav
+          activeTab={mobileActiveTab}
+          onTabChange={handleMobileTabChange}
+          unreadCount={unreadCount}
+          showChat={showChat}
+        />
       </div>
     </div>
   )
