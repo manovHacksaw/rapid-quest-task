@@ -104,7 +104,7 @@ export function ConversationsList({
             placeholder="Search or start new chat"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="whatsapp-input pl-10 pr-10 h-9 rounded-lg border-none focus:ring-0 focus:outline-none"
+            className="whatsapp-input pl-10 pr-10 h-9 rounded-3xl border-none focus:ring-0 focus:outline-none"
           />
           {searchQuery && (
             <Button
