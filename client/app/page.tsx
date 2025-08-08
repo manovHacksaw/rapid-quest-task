@@ -8,6 +8,10 @@ import { StatusWelcome } from '@/components/status-welcome'
 import { LeftNavigation } from '@/components/left-navigation'
 import { Conversation, Message } from '@/types/chat'
 import { WhatsAppLoading } from '@/components/whatsapp-loading'
+import { SettingsPage } from '@/components/settings-page'
+import { SettingsWelcome } from '@/components/settings-welcome'
+import { ProfilePage } from '@/components/profile-page'
+import { ProfileWelcome } from '@/components/profile-welcome'
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
@@ -164,10 +168,30 @@ export default function WhatsAppClone() {
             </div>
           </>
         )
+      case 'settings':
+        return (
+          <>
+            <div className="w-full md:w-[400px] lg:w-[420px] flex-col border-r border-[#313D45] flex">
+              <SettingsPage />
+            </div>
+            <div className="flex-1 flex-col hidden md:flex">
+              <SettingsWelcome />
+            </div>
+          </>
+        )
+      case 'profile':
+        return (
+          <>
+            <div className="w-full md:w-[400px] lg:w-[420px] flex-col border-r border-[#313D45] flex">
+              <ProfilePage />
+            </div>
+            <div className="flex-1 flex-col hidden md:flex">
+              <ProfileWelcome />
+            </div>
+          </>
+        )
       case 'channels':
       case 'communities':
-      case 'settings':
-      case 'profile':
         return (
           <div className="flex-1 flex items-center justify-center whatsapp-chat-bg">
             <div className="text-center text-[#8696A0]">

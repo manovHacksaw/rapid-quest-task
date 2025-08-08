@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic } from 'lucide-react'
 import { Conversation, Message } from '@/types/chat'
 import { formatTimestamp, cn } from '@/lib/utils'
+import { ConversationSearch } from './conversation-search'
+import { groupMessagesByDate } from '@/lib/utils'
 
 interface ChatAreaProps {
   conversation: Conversation | null
@@ -25,6 +27,7 @@ export function ChatArea({
   onBack
 }: ChatAreaProps) {
   const [newMessage, setNewMessage] = useState('')
+  const [showSearch, setShowSearch] = useState(false)
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -65,7 +68,7 @@ export function ChatArea({
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center whatsapp-chat-bg">
-        <div className="text-center text-[#8696A0] max-w-xl px-8">
+        <div className="text-center text-[#8696A0] max-w-md px-8">
           <div className="w-80 h-48 mx-auto mb-8 flex items-center justify-center">
             <svg viewBox="0 0 303 172" width="360" preserveAspectRatio="xMidYMid meet" className="h-full w-full" fill="none">
               <title>intro-md-beta-logo-dark</title>
@@ -133,6 +136,7 @@ export function ChatArea({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => setShowSearch(true)}
               className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
             >
               <Search className="h-5 w-5" />
@@ -167,34 +171,52 @@ export function ChatArea({
               <p>No messages in this conversation</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {messages.map((message) => {
-                const isOutgoing = message.id.startsWith('frontend-')
-                return (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex",
-                      isOutgoing ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-md px-3 py-2 rounded-lg message-bubble shadow-sm",
-                        isOutgoing
-                          ? "outgoing bg-[#005C4B] text-[#E9EDEF]"
-                          : "incoming bg-[#202C33] text-[#E9EDEF]"
-                      )}
-                    >
-                      <p className="text-sm leading-relaxed mb-1">{message.text}</p>
-                      <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0]">
-                        <span>{formatTimestamp(message.timestamp)}</span>
-                        {isOutgoing && getStatusIcon(message.status)}
-                      </div>
+            <div className="space-y-6">
+              {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
+                <div key={date}>
+                  {/* Date Header */}
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-[#2A3942] px-3 py-1 rounded-lg">
+                      <span className="text-[#8696A0] text-xs font-medium">{date}</span>
                     </div>
                   </div>
-                )
-              })}
+                  
+                  {/* Messages for this date */}
+                  <div className="space-y-2">
+                    {msgs.map((message) => {
+                      const isOutgoing = message.id.startsWith('frontend-')
+                      return (
+                        <div
+                          key={message.id}
+                          className={cn(
+                            "flex",
+                            isOutgoing ? "justify-end" : "justify-start"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "max-w-md px-3 py-2 rounded-lg message-bubble shadow-sm",
+                              isOutgoing
+                                ? "outgoing bg-[#005C4B] text-[#E9EDEF]"
+                                : "incoming bg-[#202C33] text-[#E9EDEF]"
+                            )}
+                          >
+                            <p className="text-sm leading-relaxed mb-1">{message.text}</p>
+                            <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0]">
+                              <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false
+                              })}</span>
+                              {isOutgoing && getStatusIcon(message.status)}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -223,7 +245,7 @@ export function ChatArea({
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message"
-              className="whatsapp-input text-white rounded-lg h-10 px-4 focus:ring-0 focus:outline-none"
+              className="whatsapp-input rounded-lg h-10 px-4 focus:ring-0 focus:outline-none"
             />
           </div>
           {newMessage.trim() ? (
@@ -245,6 +267,16 @@ export function ChatArea({
           )}
         </div>
       </div>
+      {showSearch && (
+        <ConversationSearch
+          messages={messages}
+          onClose={() => setShowSearch(false)}
+          onMessageSelect={(messageId) => {
+            // Handle message selection
+            setShowSearch(false)
+          }}
+        />
+      )}
     </div>
   )
 }

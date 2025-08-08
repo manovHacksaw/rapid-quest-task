@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { MoreVertical, MessageCircle, Users, Archive, Search, X } from 'lucide-react'
 import { Conversation, Message } from '@/types/chat'
-import { formatTimestamp } from '@/lib/utils'
+import { formatTimestamp, truncateMessage } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { SearchResults } from './search-results'
 
@@ -104,7 +104,7 @@ export function ConversationsList({
             placeholder="Search or start new chat"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="whatsapp-input text-white pl-10 pr-10 h-9 rounded-lg border-none focus:ring-0 focus:outline-none"
+            className="whatsapp-input pl-10 pr-10 h-9 rounded-lg border-none focus:ring-0 focus:outline-none"
           />
           {searchQuery && (
             <Button
@@ -124,14 +124,14 @@ export function ConversationsList({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 bg-[#25D366] text-[#111B21] hover:bg-[#25D366]/90 rounded-full text-sm font-medium cursor-pointer"
+              className="h-8 px-3 bg-[#25D366] text-[#111B21] hover:bg-[#25D366]/90 rounded-full text-sm font-medium"
             >
               All
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-3 text-[#8696A0] hover:bg-[#3C4043] rounded-full text-sm cursor-pointer"
+              className="h-8 px-3 text-[#8696A0] hover:bg-[#3C4043] rounded-full text-sm"
             >
               Unread
             </Button>
@@ -145,7 +145,7 @@ export function ConversationsList({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 cursor-pointer px-3 text-[#8696A0] hover:bg-[#3C4043] rounded-full text-sm"
+              className="h-8 px-3 text-[#8696A0] hover:bg-[#3C4043] rounded-full text-sm"
             >
               Groups
             </Button>
@@ -188,7 +188,7 @@ export function ConversationsList({
                   key={conversation._id}
                   onClick={() => onSelectConversation(conversation)}
                   className={cn(
-                    "conversation-item w-full p-3 text-left hover:bg-[#2A3942] transition-colors cursor-pointer",
+                    "conversation-item w-full p-3 text-left hover:bg-[#2A3942] transition-colors",
                     selectedConversation?._id === conversation._id && "selected bg-[#2A3942]"
                   )}
                 >
@@ -209,7 +209,7 @@ export function ConversationsList({
                       </div>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-sm text-[#8696A0] truncate">
-                          {conversation.lastMessage || 'No messages yet'}
+                          {truncateMessage(conversation.lastMessage || 'No messages yet', 45)}
                         </p>
                         <div className="flex items-center">
                           {getStatusIcon(conversation.status)}
