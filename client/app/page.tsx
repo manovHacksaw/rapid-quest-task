@@ -43,6 +43,96 @@ export default function WhatsAppClone() {
      socket = io("http://localhost:5000");
      socket.on("message-received", message => console.log(message))
   }, [socket])
+
+   useEffect(() => {
+    // Establish connection
+    socket = io("http://localhost:5000");
+
+    socket.on('connect', () => {
+      console.log('Socket.IO connected successfully:', socket.id);
+    });
+
+    // --- Listener for new messages ---
+    socket.on('newMessage', (newMessage: Message) => {
+      console.log('Received new message from socket:', newMessage);
+      
+      // Update the conversation list
+      setConversations(prevConvos => {
+        const existingConvoIndex = prevConvos.findIndex(c => c._id === newMessage.wa_id);
+        let updatedConvos = [...prevConvos];
+
+        if (existingConvoIndex > -1) {
+          // If conversation exists, update it and move to top
+          const convoToUpdate = {
+            ...updatedConvos[existingConvoIndex],
+            lastMessage: newMessage.text,
+            lastTimestamp: newMessage.timestamp,
+            status: newMessage.status
+          };
+          updatedConvos.splice(existingConvoIndex, 1);
+          updatedConvos.unshift(convoToUpdate);
+        } else {
+          // If it's a new conversation, create it and add to top
+          const newConversation: Conversation = {
+            _id: newMessage.wa_id,
+            name: newMessage.name,
+            lastMessage: newMessage.text,
+            lastTimestamp: newMessage.timestamp,
+            status: newMessage.status
+          };
+          updatedConvos.unshift(newConversation);
+        }
+        return updatedConvos;
+      });
+
+      // Update the messages list for the currently open chat
+      if (selectedConversation?._id === newMessage.wa_id) {
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+      }
+      
+      // Update the list of all messages for search
+      setAllMessages(prevAll => [...prevAll, newMessage]);
+    });
+
+    // --- Listener for message status updates ---
+    socket.on('messageUpdated', (updatedMessage: Message) => {
+      console.log('Received message update from socket:', updatedMessage);
+
+      // Update the messages list for the currently open chat
+       if (selectedConversation?._id === updatedMessage.wa_id) {
+          setMessages(prevMessages =>
+            prevMessages.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+          );
+       }
+
+      // Update the conversation list if the updated message is the last one
+      setConversations(prevConvos =>
+        prevConvos.map(convo => {
+          // Check if it's the right conversation and if the last message matches
+          if (convo._id === updatedMessage.wa_id && convo.lastMessage === updatedMessage.text) {
+             return { ...convo, status: updatedMessage.status };
+          }
+          return convo;
+        })
+      );
+      
+      // Update the list of all messages for search
+      setAllMessages(prevAll =>
+        prevAll.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
+      );
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket.IO disconnected.');
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off('newMessage');
+      socket.off('messageUpdated');
+      socket.disconnect();
+    };
+  }, [selectedConversation]); 
   
 
   // Fetch conversations on component mount
@@ -52,7 +142,7 @@ export default function WhatsAppClone() {
       setInitialLoading(false)
       fetchConversations()
       fetchAllMessages()
-    }, 3000) // 3 seconds loading time
+    }, 1500) // 3 seconds loading time
 
     return () => clearTimeout(timer)
   }, [])

@@ -56,12 +56,51 @@ io.on("connection", (socket)=>{
   })
 })
 
+const watchMessages = (socketIo) => {
+  // UPDATED: Added `fullDocumentBeforeChange` to get data for delete operations
+  const changeStream = Message.watch([], {
+    fullDocument: 'updateLookup',
+    fullDocumentBeforeChange: 'required'
+  });
+
+  changeStream.on('change', (change) => {
+    console.log('Database change detected:', change.operationType);
+
+    try {
+      switch (change.operationType) {
+        case 'insert':
+          console.log('Emitting newMessage:', change.fullDocument);
+          socketIo.emit('newMessage', change.fullDocument);
+          break;
+
+        case 'update':
+          console.log('Emitting messageUpdated:', change.fullDocument);
+          socketIo.emit('messageUpdated', change.fullDocument);
+          break;
+
+        case 'delete':
+          // FIXED: Use `change.fullDocumentBeforeChange` which now contains the deleted document's data
+          console.log("Emitting messageDeleted:", change.fullDocumentBeforeChange);
+          socketIo.emit('messageDeleted', change.fullDocumentBeforeChange);
+          break;
+      }
+    } catch (err) {
+      console.error("Error processing change stream event:", err);
+    }
+  });
+
+  changeStream.on('error', (err) => {
+    console.error('Change Stream Error:', err);
+  });
+};
 
 // MongoDB Connection
 async function connectDB() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ Connected to MongoDB Atlas successfully");
+
+    watchMessages(io)
   } catch (err) {
     console.error("❌ Failed to connect to MongoDB:", err);
   }
@@ -145,6 +184,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api",messageRoutes );
+
+
 
 
 

@@ -54,6 +54,30 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const deleteMessage = async (req, res, io) => {
+  try {
+    const messageId = req.params.id;
+    const messageToDelete = await Message.findOne({ id: messageId });
+
+    if (!messageToDelete) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    // Perform the deletion
+    await Message.deleteOne({ id: messageId });
+
+    // Emit an event to all clients that a message was deleted
+    // We emit from here because the 'delete' change stream event doesn't contain the full document
+    io.emit('messageDeleted', messageToDelete);
+    
+    console.log(`✅ Emitted 'messageDeleted' and deleted message: ${messageId}`);
+    res.status(200).json({ message: "Message deleted successfully", data: messageToDelete });
+  } catch (err) {
+    console.error("Error deleting message:", err);
+    res.status(500).json({ error: "Failed to delete message" });
+  }
+};
+
 module.exports = {
   getConversations,
   getMessagesByUser,
