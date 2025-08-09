@@ -55,9 +55,9 @@ export function MobileBottomNav({ activeTab, onTabChange, unreadCount, showChat 
               <tab.icon className="h-6 w-6" />
               {tab.id === 'chats' && unreadCount && unreadCount > 0 && (
                 <div className="absolute -top-2 -right-2 w-5 h-5 bg-[#25D366] rounded-full flex items-center justify-center">
-                  <span className="text-[#111B21] text-xs font-medium">
+                  {/* <span className="text-[#111B21] text-xs font-medium">
                     {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
+                  </span> */}
                 </div>
               )}
             </div>

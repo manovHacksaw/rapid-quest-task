@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic, Clock } from 'lucide-react'
+import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic } from 'lucide-react'
 import { Conversation, Message } from '@/types/chat'
-import { formatTimestamp, cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { ConversationSearch } from './conversation-search'
 import { groupMessagesByDate } from '@/lib/utils'
-import { useSocket } from '@/hooks/use-socket'
+import { StraightTick } from './ui/straight-tick'
 
 interface ChatAreaProps {
   conversation: Conversation | null
@@ -18,6 +18,48 @@ interface ChatAreaProps {
   onRefresh: () => void
   onBack?: () => void
 }
+
+const TailOutgoing = () => (
+  <svg
+    viewBox="0 0 8 13"
+    width="8"
+    height="13"
+    className="absolute top-[0.5] -right-[4px] z-50"
+    aria-hidden="true"
+  >
+    <path
+      opacity=".13"
+      d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"
+    ></path>
+    <path
+      fill="#005C4B"
+      d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"
+    ></path>
+  </svg>
+);
+
+// SVG component for the incoming message tail
+const TailIncoming = () => (
+  <svg
+    viewBox="0 0 8 13"
+    width="8"
+    height="13"
+    className="absolute top-[0.6px] -left-[3px]"
+    aria-hidden="true"
+  >
+    <path
+      opacity=".1"
+      transform="scale(-1 1) translate(-8 0)"
+      d="M5.188 1H0v11.193l6.467-8.625C7.526 2.156 6.958 1 5.188 1z"
+    ></path>
+    <path
+      fill="#202C33"
+      transform="scale(-1 1) translate(-8 0)"
+      d="M5.188 0H0v11.193l6.467-8.625C7.526 1.156 6.958 0 5.188 0z"
+    ></path>
+  </svg>
+);
+
 
 export function ChatArea({
   conversation,
@@ -29,6 +71,19 @@ export function ChatArea({
 }: ChatAreaProps) {
   const [newMessage, setNewMessage] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Automatically scroll to the bottom when new messages arrive
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      // More robustly select the viewport from shadcn/ui's ScrollArea
+      const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollViewport) {
+        scrollViewport.scrollTop = scrollViewport.scrollHeight;
+      }
+    }
+  }, [messages]);
+
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -44,23 +99,6 @@ export function ChatArea({
     }
   }
 
-  const socket = useSocket();
-
-  useEffect(() => {
-    if (!socket) return;
-
-    // Listen for new messages
-    socket.on("newMessage", (newMsg) => {
-      if (newMsg.wa_id === conversation?.wa_id) {
-        onRefresh(); // or update local state
-      }
-    });
-
-    return () => {
-      socket.off("newMessage");
-    };
-  }, [socket, conversation?.wa_id, onRefresh]);
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -70,21 +108,32 @@ export function ChatArea({
       .slice(0, 2)
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'sending':
-        return <Clock className="h-3 w-3 text-[#8696A0] animate-pulse" />
-      case 'sent':
-        return <span className="text-[#8696A0] text-xs">✓</span>
-      case 'delivered':
-        return <span className="text-[#8696A0] text-xs">✓✓</span>
-      case 'read':
-        return <span className="text-[#53BDEB] text-xs">✓✓</span>
-      default:
-        return null
-    }
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "sent":
+      return <StraightTick />;
+    case "delivered":
+      return (
+        <div className="flex relative">
+          <div className="absolute left-1">
+            <StraightTick />
+          </div>
+          <StraightTick />
+        </div>
+      );
+    case "read":
+      return (
+        <div className="flex relative">
+          <div className="absolute left-1">
+            <StraightTick color="#53BDEB" />
+          </div>
+          <StraightTick color="#53BDEB" />
+        </div>
+      );
+    default:
+      return null;
   }
-
+};
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center whatsapp-chat-bg">
@@ -103,7 +152,7 @@ export function ChatArea({
               <path d="M231.807 136.678L197.944 139.04C197.65 139.06 197.404 139.02 197.249 138.96C197.208 138.945 197.179 138.93 197.16 138.918L196.456 128.876C196.474 128.862 196.5 128.843 196.538 128.822C196.683 128.741 196.921 128.668 197.215 128.647L231.078 126.285C231.372 126.265 231.618 126.305 231.773 126.365C231.814 126.381 231.842 126.395 231.861 126.407L232.566 136.449C232.548 136.463 232.522 136.482 232.484 136.503C232.339 136.584 232.101 136.658 231.807 136.678Z" fill="white" stroke="#316474"></path>
               <path d="M283.734 125.679L144.864 135.363C141.994 135.563 139.493 133.4 139.293 130.54L133.059 41.6349C132.858 38.7751 135.031 36.2858 137.903 36.0856L276.773 26.4008C279.647 26.2005 282.144 28.364 282.345 31.2238L288.578 120.129C288.779 122.989 286.607 125.478 283.734 125.679Z" fill="#EEFAF6"></path>
               <path d="M144.864 135.363C141.994 135.563 139.493 133.4 139.293 130.54L133.059 41.6349C132.858 38.7751 135.031 36.2858 137.903 36.0856L276.773 26.4008C279.647 26.2004 282.144 28.364 282.345 31.2238L288.578 120.129C288.779 122.989 286.607 125.478 283.734 125.679" stroke="#316474"></path>
-              <path d="M278.565 121.405L148.68 130.463C146.256 130.632 144.174 128.861 144.012 126.55L138.343 45.695C138.181 43.3846 139.994 41.3414 142.419 41.1723L272.304 32.1142C274.731 31.945 276.81 33.7166 276.972 36.0271L282.641 116.882C282.803 119.193 280.992 121.236 278.565 121.405Z" fill="#DFF3ED" stroke="#316474"></path>
+              <path d="M278.565 121.405L148.68 130.463C146.256 130.632 144.174 128.861 144.012 126.55L138.343 45.695C138.181 43.3846 139.994 41.3414 142.419 41.1723L272.304 32.1142C274.731 31.945 276.810 33.7166 276.972 36.0271L282.641 116.882C282.803 119.193 280.992 121.236 278.565 121.405Z" fill="#DFF3ED" stroke="#316474"></path>
               <path d="M230.198 129.97L298.691 125.193L299.111 131.189C299.166 131.97 299.013 132.667 298.748 133.161C298.478 133.661 298.137 133.887 297.825 133.909L132.794 145.418C132.482 145.44 132.113 145.263 131.777 144.805C131.445 144.353 131.196 143.684 131.141 142.903L130.721 136.907L199.215 132.131C199.476 132.921 199.867 133.614 200.357 134.129C200.929 134.729 201.665 135.115 202.482 135.058L227.371 133.322C228.188 133.265 228.862 132.782 229.345 132.108C229.758 131.531 230.05 130.79 230.198 129.97Z" fill="#42CBA5" stroke="#316474"></path>
               <path d="M230.367 129.051L300.275 124.175L300.533 127.851C300.591 128.681 299.964 129.403 299.13 129.461L130.858 141.196C130.025 141.254 129.303 140.627 129.245 139.797L128.987 136.121L198.896 131.245C199.485 132.391 200.709 133.147 202.084 133.051L227.462 131.281C228.836 131.185 229.943 130.268 230.367 129.051Z" fill="#EEFAF6" stroke="#316474"></path>
               <ellipse rx="15.9969" ry="15.9971" transform="matrix(0.997577 -0.0695704 0.0699429 0.997551 210.659 83.553)" fill="#42CBA5" stroke="#316474"></ellipse>
@@ -112,7 +161,7 @@ export function ChatArea({
           </div>
           <h2 className="text-3xl font-light text-[#E9EDEF] mb-4">WhatsApp Web</h2>
           <p className="text-[#8696A0] text-sm leading-relaxed mb-6">
-            Send and receive messages without keeping your phone online.<br/>
+            Send and receive messages without keeping your phone online.<br />
             Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
           </p>
           <div className="flex items-center justify-center gap-2 text-sm text-[#8696A0]">
@@ -127,9 +176,9 @@ export function ChatArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-[#0B141A] h-full">
       {/* Chat Header */}
-      <div className="whatsapp-header px-4 py-3">
+      <div className="whatsapp-header px-4 py-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {onBack && (
@@ -187,7 +236,7 @@ export function ChatArea({
       </div>
 
       {/* Messages Area with WhatsApp Background */}
-      <ScrollArea className="flex-1 whatsapp-chat-bg-pattern scrollbar-thin">
+      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 whatsapp-chat-bg-pattern scrollbar-thin">
         <div className="p-4">
           {loading ? (
             <div className="space-y-4">
@@ -205,44 +254,61 @@ export function ChatArea({
               <p>No messages in this conversation</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-2">
               {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
                 <div key={date}>
                   {/* Date Header */}
-                  <div className="flex justify-center mb-4">
-                    <div className="bg-[#2A3942] px-3 py-1 rounded-lg">
+                  <div className="flex justify-center my-4">
+                    <div className="bg-[#182229] px-3 py-1.5 rounded-lg shadow">
                       <span className="text-[#8696A0] text-xs font-medium">{date}</span>
                     </div>
                   </div>
-                  
+
                   {/* Messages for this date */}
-                  <div className="space-y-2">
-                    {msgs.map((message) => {
-                      const isOutgoing = message.id.startsWith('frontend-')
+                  <div className="space-y-1">
+                    {msgs.map((message, index) => {
+                      const isOutgoing = message.id.startsWith('frontend-');
+                      const prevMessage = msgs[index - 1];
+                      const isFirstInGroup = !prevMessage || (prevMessage.id.startsWith('frontend-') !== isOutgoing);
+
                       return (
                         <div
                           key={message.id}
                           className={cn(
-                            "flex",
-                            isOutgoing ? "justify-end" : "justify-start"
+                            "flex w-full",
+                            isOutgoing ? "justify-end" : "justify-start",
+                            isFirstInGroup ? "mt-2" : "mt-1"
                           )}
                         >
                           <div
                             className={cn(
-                              "max-w-md px-3 py-2 rounded-lg message-bubble shadow-sm",
+                              "relative max-w-[65%] px-3 py-2 shadow-sm text-white",
                               isOutgoing
-                                ? "outgoing bg-[#005C4B] text-[#E9EDEF]"
-                                : "incoming bg-[#202C33] text-[#E9EDEF]"
+                                ? "bg-[#005C4B] text-[#E9EDEF]"
+                                : "bg-[#202C33] text-[#E9EDEF]",
+                              "rounded-lg",
+                              isOutgoing ?
+                                { 'rounded-tr-none': isFirstInGroup, 'rounded-tr-sm': !isFirstInGroup } :
+                                { 'rounded-tl-none': isFirstInGroup, 'rounded-tl-sm': !isFirstInGroup }
                             )}
                           >
-                            <p className="text-sm leading-relaxed mb-1">{message.text}</p>
-                            <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0]">
-                              <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: false
-                              })}</span>
-                              {isOutgoing && getStatusIcon(message.status)}
+                            {/* Render tail only for the first message in a group */}
+                            {isFirstInGroup && (
+                              isOutgoing ? <TailOutgoing /> : <TailIncoming />
+                            )}
+
+                            <div className="flex flex-col">
+                              <p className="text-sm leading-relaxed" style={{ wordBreak: 'break-word' }}>
+                                {message.text}
+                              </p>
+                              <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0] self-end mt-1">
+                                <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false
+                                })}</span>
+                                {isOutgoing && getStatusIcon(message.status)}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -257,7 +323,7 @@ export function ChatArea({
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="whatsapp-input-area px-4 py-3">
+      <div className="whatsapp-input-area px-4 py-3 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <Button
             variant="ghost"
@@ -286,7 +352,7 @@ export function ChatArea({
             <Button
               onClick={handleSendMessage}
               size="sm"
-              className="bg-[#25D366] hover:bg-[#128C7E] rounded-full h-10 w-10 p-0"
+              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-10 w-10 p-0"
             >
               <Send className="h-5 w-5" />
             </Button>
@@ -306,7 +372,8 @@ export function ChatArea({
           messages={messages}
           onClose={() => setShowSearch(false)}
           onMessageSelect={(messageId) => {
-            // Handle message selection
+            // Placeholder for scrolling to the selected message
+            console.log("Selected message:", messageId);
             setShowSearch(false)
           }}
         />
