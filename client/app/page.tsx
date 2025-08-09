@@ -14,15 +14,14 @@ import { ProfilePage } from '@/components/profile-page'
 import { ProfileWelcome } from '@/components/profile-welcome'
 import { MobileBottomNav } from '@/components/mobile-bottom-nav'
 import { useSocket } from '@/hooks/use-socket'
-import { io } from 'socket.io-client'
-import { Socket } from 'dgram'
+import { io, type Socket } from 'socket.io-client' // Use `type Socket` for proper typing
 
 const API_BASE_URL = 'http://localhost:5000/api'
 
 
 
 
-
+const SOCKET_URL = 'http://localhost:5000/'
 
 type ActiveTab = 'chats' | 'status' | 'channels' | 'communities' | 'settings' | 'profile'
 
@@ -37,102 +36,79 @@ export default function WhatsAppClone() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('chats')
   const [mobileActiveTab, setMobileActiveTab] = useState<'chats' | 'updates' | 'communities' | 'calls'>('chats')
 
-  let socket;
+  useEffect(() => {
+    const socket: Socket<ServerToClientEvents> = io(SOCKET_URL);
 
-  useEffect(()=>{
-     socket = io("http://localhost:5000");
-     socket.on("message-received", message => console.log(message))
-  }, [socket])
-
-   useEffect(() => {
-    // Establish connection
-    socket = io("http://localhost:5000");
-
-    socket.on('connect', () => {
-      console.log('Socket.IO connected successfully:', socket.id);
-    });
+    socket.on('connect', () => console.log('Socket.IO connected:', socket.id));
+    socket.on('disconnect', () => console.log('Socket.IO disconnected.'));
 
     // --- Listener for new messages ---
     socket.on('newMessage', (newMessage: Message) => {
-      console.log('Received new message from socket:', newMessage);
-      
-      // Update the conversation list
-      setConversations(prevConvos => {
-        const existingConvoIndex = prevConvos.findIndex(c => c._id === newMessage.wa_id);
-        let updatedConvos = [...prevConvos];
+      console.log('Received newMessage:', newMessage);
 
-        if (existingConvoIndex > -1) {
-          // If conversation exists, update it and move to top
-          const convoToUpdate = {
-            ...updatedConvos[existingConvoIndex],
-            lastMessage: newMessage.text,
-            lastTimestamp: newMessage.timestamp,
-            status: newMessage.status
-          };
-          updatedConvos.splice(existingConvoIndex, 1);
-          updatedConvos.unshift(convoToUpdate);
-        } else {
-          // If it's a new conversation, create it and add to top
-          const newConversation: Conversation = {
-            _id: newMessage.wa_id,
-            name: newMessage.name,
-            lastMessage: newMessage.text,
-            lastTimestamp: newMessage.timestamp,
-            status: newMessage.status
-          };
-          updatedConvos.unshift(newConversation);
-        }
+      // Update the conversation list
+      setConversations(prev => {
+        const updatedConvos = prev.filter(c => c._id !== newMessage.wa_id);
+        updatedConvos.unshift({
+          _id: newMessage.wa_id,
+          name: newMessage.name,
+          lastMessage: newMessage.text,
+          lastTimestamp: newMessage.timestamp,
+          status: newMessage.status,
+        });
         return updatedConvos;
       });
 
-      // Update the messages list for the currently open chat
+      // Update the messages list ONLY if the user is viewing the relevant chat
       if (selectedConversation?._id === newMessage.wa_id) {
-        setMessages(prevMessages => [...prevMessages, newMessage]);
+        setMessages(prev => [...prev, newMessage]);
       }
       
-      // Update the list of all messages for search
-      setAllMessages(prevAll => [...prevAll, newMessage]);
+      // Always update the master list of all messages for search
+      setAllMessages(prev => [...prev, newMessage]);
     });
 
     // --- Listener for message status updates ---
     socket.on('messageUpdated', (updatedMessage: Message) => {
-      console.log('Received message update from socket:', updatedMessage);
+      console.log('Received messageUpdated:', updatedMessage);
 
-      // Update the messages list for the currently open chat
-       if (selectedConversation?._id === updatedMessage.wa_id) {
-          setMessages(prevMessages =>
-            prevMessages.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
-          );
-       }
+      // Update message status in the open chat window
+      setMessages(prev => prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg));
 
-      // Update the conversation list if the updated message is the last one
-      setConversations(prevConvos =>
-        prevConvos.map(convo => {
-          // Check if it's the right conversation and if the last message matches
-          if (convo._id === updatedMessage.wa_id && convo.lastMessage === updatedMessage.text) {
-             return { ...convo, status: updatedMessage.status };
-          }
-          return convo;
-        })
-      );
+      // Update the status on the conversation list if it's the last message
+      setConversations(prev => prev.map(convo => {
+        if (convo._id === updatedMessage.wa_id && convo.lastTimestamp === updatedMessage.timestamp) {
+          return { ...convo, status: updatedMessage.status };
+        }
+        return convo;
+      }));
       
-      // Update the list of all messages for search
-      setAllMessages(prevAll =>
-        prevAll.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg)
-      );
+      // Update the master list of all messages for search
+      setAllMessages(prev => prev.map(msg => msg.id === updatedMessage.id ? updatedMessage : msg));
     });
 
-    socket.on('disconnect', () => {
-      console.log('Socket.IO disconnected.');
+    // --- Listener for message deletions ---
+    socket.on('messageDeleted', (deletedMessage: Message | null) => {
+      if (!deletedMessage) return; // Guard against null messages
+      console.log('Received messageDeleted:', deletedMessage.id);
+
+      // Remove the message from the open chat and global search list
+      setMessages(prev => prev.filter(msg => msg.id !== deletedMessage.id));
+      setAllMessages(prev => prev.filter(msg => msg.id !== deletedMessage.id));
+
+      // Just re-fetch the conversation list. This is the simplest and most
+      // reliable way to find the new "last message" after a deletion.
+      fetchConversations();
     });
 
-    // Cleanup on component unmount
     return () => {
-      socket.off('newMessage');
-      socket.off('messageUpdated');
+      socket.off();
       socket.disconnect();
     };
-  }, [selectedConversation]); 
+  // FIXED: Dependency on `selectedConversation` is crucial. This ensures that when a
+  // user selects a new chat, the socket listeners are aware of the change and can
+  // correctly update the `messages` state for the currently active chat.
+  }, [selectedConversation]);
   
 
   // Fetch conversations on component mount
@@ -205,8 +181,7 @@ export default function WhatsAppClone() {
         }),
       })
 
-     const socket = io("http://localhost:5000");
-     socket.emit("user-message", text.trim());
+     // Remove duplicate socket creation - will be handled by change stream
 
       if (response.ok) {
         // Refresh messages after sending

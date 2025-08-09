@@ -53,14 +53,35 @@ io.on("connection", (socket)=>{
   socket.on("user-message", message =>{
     console.log("A new user has texted: ", message)
     io.emit("message-received", message)
+
+    // For testing: simulate a new message event
+    const testMessage = {
+      id: `test-${Date.now()}`,
+      wa_id: 'test_user',
+      name: 'Test User',
+      text: message,
+      timestamp: `${Math.floor(Date.now() / 1000)}`,
+      status: 'sent'
+    };
+
+    // Emit newMessage event to test real-time functionality
+    setTimeout(() => {
+      console.log("📨 Emitting test newMessage:", testMessage);
+      io.emit("newMessage", testMessage);
+    }, 1000);
   })
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
 })
 
 const watchMessages = (socketIo) => {
-  // UPDATED: Added `fullDocumentBeforeChange` to get data for delete operations
+  // CORRECTED: Changed `required` to `whenAvailable`. This prevents the stream
+  // from crashing if a pre-image isn't available for an 'update' event.
   const changeStream = Message.watch([], {
     fullDocument: 'updateLookup',
-    fullDocumentBeforeChange: 'required'
+    fullDocumentBeforeChange: 'whenAvailable'
   });
 
   changeStream.on('change', (change) => {
@@ -69,19 +90,18 @@ const watchMessages = (socketIo) => {
     try {
       switch (change.operationType) {
         case 'insert':
-          console.log('Emitting newMessage:', change.fullDocument);
           socketIo.emit('newMessage', change.fullDocument);
           break;
-
         case 'update':
-          console.log('Emitting messageUpdated:', change.fullDocument);
           socketIo.emit('messageUpdated', change.fullDocument);
           break;
-
         case 'delete':
-          // FIXED: Use `change.fullDocumentBeforeChange` which now contains the deleted document's data
-          console.log("Emitting messageDeleted:", change.fullDocumentBeforeChange);
-          socketIo.emit('messageDeleted', change.fullDocumentBeforeChange);
+          // ADDED: A guard clause to ensure we only proceed if the pre-image exists.
+          if (change.fullDocumentBeforeChange) {
+            socketIo.emit('messageDeleted',  change.documentKey._id.toString());
+          } else {
+            console.warn(`A document was deleted, but its pre-image was not available. Can't emit 'messageDeleted'.`);
+          }
           break;
       }
     } catch (err) {
@@ -90,6 +110,7 @@ const watchMessages = (socketIo) => {
   });
 
   changeStream.on('error', (err) => {
+    // This listener will now catch other errors without crashing on pre-image issues.
     console.error('Change Stream Error:', err);
   });
 };
@@ -97,12 +118,16 @@ const watchMessages = (socketIo) => {
 // MongoDB Connection
 async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB Atlas successfully");
-
-    watchMessages(io)
+    // Set timeout for MongoDB connection
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/whatsapp-processor', {
+      serverSelectionTimeoutMS: 5000, // 5 second timeout
+      connectTimeoutMS: 5000,
+    });
+    console.log("✅ Connected to MongoDB successfully");
+    watchMessages(io);
   } catch (err) {
-    console.error("❌ Failed to connect to MongoDB:", err);
+    console.error("❌ Failed to connect to MongoDB:", err.message);
+    console.log("ℹ️ Continuing without MongoDB - real-time features may be limited");
   }
 }
 
@@ -183,7 +208,13 @@ app.get("/", (req, res) => {
   res.json(data); // ✅ serve entire loaded data
 });
 
-app.use("/api",messageRoutes );
+// Middleware to pass io instance to routes
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
+app.use("/api", messageRoutes);
 
 
 

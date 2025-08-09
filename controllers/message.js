@@ -48,6 +48,10 @@ const sendMessage = async (req, res) => {
     });
 
     await newMessage.save();
+
+    // Real-time update will be handled by MongoDB change stream
+    // No need to emit here as watchMessages in app.js will handle it
+
     res.status(201).json({ message: "Message stored successfully", data: newMessage });
   } catch (err) {
     res.status(500).json({ error: "Failed to store message" });
@@ -81,5 +85,6 @@ const deleteMessage = async (req, res, io) => {
 module.exports = {
   getConversations,
   getMessagesByUser,
-  sendMessage
+  sendMessage,
+  deleteMessage
 };
