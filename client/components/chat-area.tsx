@@ -205,7 +205,7 @@ export function ChatArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0B141A] h-full min-h-0 w-full">
+    <div className="fixed inset-0 z-40 flex flex-col bg-[#0B141A] md:relative md:inset-auto md:z-auto md:flex-1 h-full min-h-0 w-full">
       {/* Chat Header */}
       <div className="whatsapp-header px-2 sm:px-4 py-2 sm:py-3 flex-shrink-0 min-h-[60px] sm:min-h-[70px]">
         <div className="flex items-center justify-between h-full">
