@@ -97,7 +97,7 @@ export function LeftNavigation({ activeTab, onTabChange, unreadCount = 99 }: Lef
             )}
             title={item.label}
           >
-            <item.icon className = "h-8" />
+            <item.icon />
           </Button>
         ))}
       </div>
