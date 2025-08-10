@@ -17,7 +17,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
-      "https://whatsapp-web-clone-murex.vercel.app/",
+      "https://whatsapp-web-clone-murex.vercel.app",
       "https://2xbrt7r7-3000.inc1.devtunnels.ms",
       
     ],
