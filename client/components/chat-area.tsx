@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Send, Phone, Video, MoreVertical, ArrowLeft, Search, Smile, Paperclip, Mic } from 'lucide-react'
 import { Conversation, Message } from '@/types/chat'
@@ -72,17 +71,26 @@ export function ChatArea({
   const [newMessage, setNewMessage] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Automatically scroll to the bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {
-      // More robustly select the viewport from shadcn/ui's ScrollArea
       const scrollViewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollViewport) {
         scrollViewport.scrollTop = scrollViewport.scrollHeight;
       }
     }
   }, [messages]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${scrollHeight}px`;
+    }
+  }, [newMessage]);
 
 
   const handleSendMessage = () => {
@@ -92,7 +100,7 @@ export function ChatArea({
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
@@ -134,6 +142,9 @@ const getStatusIcon = (status: string) => {
       return null;
   }
 };
+
+  const chatBgUrl = './wp-bg.png';
+
   if (!conversation) {
     return (
       <div className="flex-1 flex items-center justify-center whatsapp-chat-bg">
@@ -236,7 +247,25 @@ const getStatusIcon = (status: string) => {
       </div>
 
       {/* Messages Area with WhatsApp Background */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 whatsapp-chat-bg-pattern scrollbar-thin">
+        <div className="flex-1 min-h-0 relative">
+        {/* Background Layer with Opacity */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{ 
+            backgroundImage: `url(${chatBgUrl})`, 
+            backgroundSize: 'contain',
+            opacity: 0.1
+          }}
+        />
+      <ScrollArea 
+        ref={scrollAreaRef} 
+        className="flex-1 min-h-0 scrollbar-thin" 
+        style={{ 
+          // backgroundImage: `url(${chatBgUrl})`, 
+          backgroundSize: 'contain',
+          opacity: 0.9,
+          zIndex: 50
+        }}>
         <div className="p-4">
           {loading ? (
             <div className="space-y-4">
@@ -321,10 +350,11 @@ const getStatusIcon = (status: string) => {
           )}
         </div>
       </ScrollArea>
+      </div>
 
       {/* Message Input */}
       <div className="whatsapp-input-area px-4 py-3 flex-shrink-0">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-end space-x-3">
           <Button
             variant="ghost"
             size="sm"
@@ -340,19 +370,22 @@ const getStatusIcon = (status: string) => {
             <Paperclip className="h-5 w-5" />
           </Button>
           <div className="flex-1 relative">
-            <Input
+          <textarea
+              ref={textareaRef}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message"
-              className="whatsapp-input rounded-lg h-10 px-4 focus:ring-0 focus:outline-none"
+              className="whatsapp-input rounded-lg px-4 py-2.5 resize-none w-full bg-[#2A3942] text-white placeholder-[#8696A0] focus:ring-0 focus:outline-none"
+              rows={1}
+              style={{ maxHeight: '120px', overflowY: 'auto' }}
             />
           </div>
           {newMessage.trim() ? (
             <Button
               onClick={handleSendMessage}
               size="sm"
-              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-10 w-10 p-0"
+              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-10 w-10 p-0 flex-shrink-0"
             >
               <Send className="h-5 w-5" />
             </Button>
@@ -360,7 +393,7 @@ const getStatusIcon = (status: string) => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0] flex-shrink-0"
             >
               <Mic className="h-5 w-5" />
             </Button>
