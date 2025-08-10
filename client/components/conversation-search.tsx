@@ -100,7 +100,7 @@ export function ConversationSearch({ messages, onClose, onMessageSelect }: Conve
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-[#8696A0]">
-                          {new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
+                          {new Date(parseInt(message.timestamp.toString()) * 1000).toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                             hour12: false

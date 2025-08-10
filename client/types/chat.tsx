@@ -1,4 +1,5 @@
 export interface Conversation {
+  id: string,
   _id: string
   name: string
   lastMessage: string

@@ -51,6 +51,7 @@ export default function WhatsAppClone() {
       setConversations((prev) => {
         const updatedConvos = prev.filter((c) => c._id !== newMessage.wa_id)
         updatedConvos.unshift({
+          id: newMessage.wa_id, // Add the required 'id' property
           _id: newMessage.wa_id,
           name: newMessage.name,
           lastMessage: newMessage.text,
