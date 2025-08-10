@@ -13,15 +13,15 @@ import { SettingsWelcome } from '@/components/settings-welcome'
 import { ProfilePage } from '@/components/profile-page'
 import { ProfileWelcome } from '@/components/profile-welcome'
 import { MobileBottomNav } from '@/components/mobile-bottom-nav'
-import { useSocket } from '@/hooks/use-socket'
 import { io, type Socket } from 'socket.io-client' // Use `type Socket` for proper typing
 
-const API_BASE_URL = 'http://localhost:5000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
 
 
 
-
-const SOCKET_URL = 'http://localhost:5000/'
+    
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL 
+console.log(API_BASE_URL)
 
 type ActiveTab = 'chats' | 'status' | 'channels' | 'communities' | 'settings' | 'profile'
 
