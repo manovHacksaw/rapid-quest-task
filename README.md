@@ -5,7 +5,7 @@ A full-stack WhatsApp Web clone built as a Full Stack Developer Evaluation Task.
 ## 🔗 Live Demo
 
 - **Frontend (Client):** [https://whatsapp-web-clone-murex.vercel.app](https://whatsapp-web-clone-murex.vercel.app)
-- **Backend (API):** Deployed on Render/Railway (see server README for details)
+- **Backend (API):** Deployed on Render [https://whatsapp-web-rapid-quest-task.onrender.com](https://whatsapp-web-rapid-quest-task.onrender.com)
 
 ## 📋 Project Overview
 
