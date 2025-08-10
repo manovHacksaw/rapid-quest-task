@@ -165,8 +165,8 @@ export function ChatArea({
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center whatsapp-chat-bg min-h-0">
-        <div className="text-center text-[#8696A0] max-w-xs sm:max-w-md lg:max-w-lg px-4 sm:px-8">
+      <div className="flex-1 flex items-center  justify-center whatsapp-chat-bg min-h-0">
+        <div className="text-center text-[#8696A0] max-w-xs sm:max-w-md lg:max-w-2xl px-4 sm:px-8">
           <div className="w-48 h-32 sm:w-64 sm:h-40 lg:w-80 lg:h-48 mx-auto mb-4 sm:mb-6 lg:mb-8 flex items-center justify-center">
             <svg viewBox="0 0 303 172" className="h-full w-full max-w-full" preserveAspectRatio="xMidYMid meet" fill="none">
               <title>intro-md-beta-logo-dark</title>
@@ -193,11 +193,11 @@ export function ChatArea({
             Send and receive messages without keeping your phone online.<br className="hidden sm:block" />
             <span className="sm:hidden"> </span>Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
           </p>
-          <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-[#8696A0]">
+          <div className="flex items-center justify-center gap-2 mt-20 text-xs sm:text-sm text-[#8696A0]">
             <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
-            <span className="text-center">Your personal messages are end-to-end encrypted</span>
+            <span className="text-center ">Your personal messages are end-to-end encrypted</span>
           </div>
         </div>
       </div>

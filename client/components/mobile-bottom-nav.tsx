@@ -6,7 +6,7 @@ interface MobileBottomNavProps {
   activeTab: 'chats' | 'updates' | 'communities' | 'calls'
   onTabChange: (tab: 'chats' | 'updates' | 'communities' | 'calls') => void
   unreadCount?: number
-  showChat?: boolean // Add this prop to control visibility
+  showChat?: boolean
 }
 
 export function MobileBottomNav({ activeTab, onTabChange, unreadCount, showChat = false }: MobileBottomNavProps) {
@@ -53,20 +53,13 @@ export function MobileBottomNav({ activeTab, onTabChange, unreadCount, showChat 
           >
             <div className="relative">
               <tab.icon className="h-6 w-6" />
-              {tab.id === 'chats' && unreadCount && unreadCount > 0 && (
-                <div className="absolute -top-2 -right-2 w-5 h-5 bg-[#25D366] rounded-full flex items-center justify-center">
-                  {/* <span className="text-[#111B21] text-xs font-medium">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span> */}
-                </div>
-              )}
+            
             </div>
             <span className="text-xs font-medium">{tab.label}</span>
           </Button>
         ))}
       </div>
-      
-      {/* Home indicator for iOS-style devices */}
+       {/* Home indicator for iOS-style devices */}
       <div className="flex justify-center pt-2 pb-1">
         <div className="w-32 h-1 bg-[#8696A0] rounded-full opacity-30" />
       </div>

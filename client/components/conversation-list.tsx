@@ -141,7 +141,7 @@ const getStatusIcon = (status: string) => {
             placeholder={isSearching ? "Search..." : "Ask Meta AI or Search"}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="whatsapp-input pl-10 pr-10 h-12 md:h-9 rounded-full md:rounded-lg border-none focus:ring-0 focus:outline-none text-base md:text-sm"
+            className="whatsapp-input pl-10 pr-10 h-12 md:h-9 rounded-3xl md:rounded-lg border-none focus:ring-0 focus:outline-none text-base md:text-sm bg-[#2A3942]"
           />
           {searchQuery && (
             <Button
