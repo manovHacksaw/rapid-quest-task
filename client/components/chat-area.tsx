@@ -59,7 +59,6 @@ const TailIncoming = () => (
   </svg>
 );
 
-
 export function ChatArea({
   conversation,
   messages,
@@ -92,6 +91,25 @@ export function ChatArea({
     }
   }, [newMessage]);
 
+  // Handle mobile back button functionality
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (onBack) {
+        onBack();
+      }
+    };
+
+    if (conversation) {
+      // Push a state to history when a conversation is opened
+      history.pushState({ conversationId: conversation.id }, '');
+      window.addEventListener('popstate', handlePopState);
+    }
+
+    // Cleanup function to remove the event listener
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [conversation, onBack]);
 
   const handleSendMessage = () => {
     if (newMessage.trim()) {
@@ -116,41 +134,41 @@ export function ChatArea({
       .slice(0, 2)
   }
 
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "sent":
-      return <StraightTick />;
-    case "delivered":
-      return (
-        <div className="flex relative">
-          <div className="absolute left-1">
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "sent":
+        return <StraightTick />;
+      case "delivered":
+        return (
+          <div className="flex relative">
+            <div className="absolute left-1">
+              <StraightTick />
+            </div>
             <StraightTick />
           </div>
-          <StraightTick />
-        </div>
-      );
-    case "read":
-      return (
-        <div className="flex relative">
-          <div className="absolute left-1">
+        );
+      case "read":
+        return (
+          <div className="flex relative">
+            <div className="absolute left-1">
+              <StraightTick color="#53BDEB" />
+            </div>
             <StraightTick color="#53BDEB" />
           </div>
-          <StraightTick color="#53BDEB" />
-        </div>
-      );
-    default:
-      return null;
-  }
-};
+        );
+      default:
+        return null;
+    }
+  };
 
   const chatBgUrl = './wp-bg.png';
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center whatsapp-chat-bg">
-        <div className="text-center text-[#8696A0] max-w-md px-8">
-          <div className="w-80 h-48 mx-auto mb-8 flex items-center justify-center">
-            <svg viewBox="0 0 303 172" width="360" preserveAspectRatio="xMidYMid meet" className="h-full w-full" fill="none">
+      <div className="flex-1 flex items-center justify-center whatsapp-chat-bg min-h-0">
+        <div className="text-center text-[#8696A0] max-w-xs sm:max-w-md lg:max-w-lg px-4 sm:px-8">
+          <div className="w-48 h-32 sm:w-64 sm:h-40 lg:w-80 lg:h-48 mx-auto mb-4 sm:mb-6 lg:mb-8 flex items-center justify-center">
+            <svg viewBox="0 0 303 172" className="h-full w-full max-w-full" preserveAspectRatio="xMidYMid meet" fill="none">
               <title>intro-md-beta-logo-dark</title>
               <path fillRule="evenodd" clipRule="evenodd" d="M229.565 160.229C262.212 149.245 286.931 118.241 283.39 73.4194C278.009 5.31929 212.365 -11.5738 171.472 8.48673C115.998 35.6999 108.972 40.1612 69.2388 40.1612C39.645 40.1612 9.51317 54.4147 5.74669 92.952C3.01662 120.885 13.9985 145.267 54.6373 157.716C128.599 180.373 198.017 170.844 229.565 160.229Z" fill="#364147"></path>
               <path fillRule="evenodd" clipRule="evenodd" d="M131.589 68.9422C131.593 68.9422 131.596 68.9422 131.599 68.9422C137.86 68.9422 142.935 63.6787 142.935 57.1859C142.935 50.6931 137.86 45.4297 131.599 45.4297C126.518 45.4297 122.218 48.8958 120.777 53.6723C120.022 53.4096 119.213 53.2672 118.373 53.2672C114.199 53.2672 110.815 56.7762 110.815 61.1047C110.815 65.4332 114.199 68.9422 118.373 68.9422C118.377 68.9422 118.381 68.9422 118.386 68.9422H131.589Z" fill="#F1F1F2" fillOpacity="0.38"></path>
@@ -170,16 +188,16 @@ const getStatusIcon = (status: string) => {
               <path d="M208.184 87.1094L204.777 84.3593C204.777 84.359 204.776 84.3587 204.776 84.3583C203.957 83.6906 202.744 83.8012 202.061 84.6073C201.374 85.4191 201.486 86.6265 202.31 87.2997L202.312 87.3011L207.389 91.4116C207.389 91.4119 207.389 91.4121 207.389 91.4124C208.278 92.1372 209.611 91.9373 210.242 90.9795L218.283 78.77C218.868 77.8813 218.608 76.6968 217.71 76.127C216.817 75.5606 215.624 75.8109 215.043 76.6939L208.184 87.1094Z" fill="white" stroke="#316474"></path>
             </svg>
           </div>
-          <h2 className="text-3xl font-light text-[#E9EDEF] mb-4">WhatsApp Web</h2>
-          <p className="text-[#8696A0] text-sm leading-relaxed mb-6">
-            Send and receive messages without keeping your phone online.<br />
-            Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-light text-[#E9EDEF] mb-2 sm:mb-4">WhatsApp Web</h2>
+          <p className="text-[#8696A0] text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6">
+            Send and receive messages without keeping your phone online.<br className="hidden sm:block" />
+            <span className="sm:hidden"> </span>Use WhatsApp on up to 4 linked devices and 1 phone at the same time.
           </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-[#8696A0]">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-[#8696A0]">
+            <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
             </svg>
-            Your personal messages are end-to-end encrypted
+            <span className="text-center">Your personal messages are end-to-end encrypted</span>
           </div>
         </div>
       </div>
@@ -187,67 +205,67 @@ const getStatusIcon = (status: string) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0B141A] h-full">
+    <div className="flex-1 flex flex-col bg-[#0B141A] h-full min-h-0 w-full">
       {/* Chat Header */}
-      <div className="whatsapp-header px-4 py-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+      <div className="whatsapp-header px-2 sm:px-4 py-2 sm:py-3 flex-shrink-0 min-h-[60px] sm:min-h-[70px]">
+        <div className="flex items-center justify-between h-full">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
             {onBack && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onBack}
-                className="h-9 w-9 p-0 hover:bg-[#3C4043] text-[#8696A0] md:hidden"
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-[#3C4043] text-[#8696A0] md:hidden flex-shrink-0"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-1 w-1 sm:h-5 sm:w-5" />
               </Button>
             )}
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-[#6B7C85] text-[#E9EDEF] font-medium text-sm">
+            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+              <AvatarFallback className="bg-[#6B7C85] text-[#E9EDEF] font-medium text-xs sm:text-sm">
                 {getInitials(conversation.name)}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h2 className="font-medium text-[#E9EDEF] text-base">{conversation.name}</h2>
-              <p className="text-xs text-[#8696A0]">click here for contact info</p>
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <h2 className="font-medium text-[#E9EDEF] text-sm sm:text-base truncate">{conversation.name}</h2>
+              <p className="text-xs text-[#8696A0] truncate">click here for contact info</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
             >
-              <Video className="h-5 w-5" />
+              <Video className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
             >
-              <Phone className="h-5 w-5" />
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowSearch(true)}
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
             >
-              <MoreVertical className="h-5 w-5" />
+              <MoreVertical className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Messages Area with WhatsApp Background */}
-        <div className="flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0 relative w-full overflow-hidden">
         {/* Background Layer with Opacity */}
         <div 
           className="absolute inset-0 z-0"
@@ -257,145 +275,156 @@ const getStatusIcon = (status: string) => {
             opacity: 0.1
           }}
         />
-      <ScrollArea 
-        ref={scrollAreaRef} 
-        className="flex-1 min-h-0 scrollbar-thin" 
-        style={{ 
-          // backgroundImage: `url(${chatBgUrl})`, 
-          backgroundSize: 'contain',
-          opacity: 0.9,
-          zIndex: 50
-        }}>
-        <div className="p-4">
-          {loading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex animate-pulse">
-                  <div className="bg-[#3C4043] rounded-lg p-3 max-w-xs">
-                    <div className="h-4 bg-[#2A3942] rounded mb-2" />
-                    <div className="h-3 bg-[#2A3942] rounded w-16" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center text-[#8696A0] py-8">
-              <p>No messages in this conversation</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
-                <div key={date}>
-                  {/* Date Header */}
-                  <div className="flex justify-center my-4">
-                    <div className="bg-[#182229] px-3 py-1.5 rounded-lg shadow">
-                      <span className="text-[#8696A0] text-xs font-medium">{date}</span>
+        <ScrollArea 
+          ref={scrollAreaRef} 
+          className="h-full w-full relative z-10" 
+          style={{ 
+            opacity: 0.9
+          }}
+        >
+          <div className="p-2 sm:p-4 w-full">
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex animate-pulse">
+                    <div className="bg-[#3C4043] rounded-lg p-3 max-w-[75%] sm:max-w-xs">
+                      <div className="h-4 bg-[#2A3942] rounded mb-2" />
+                      <div className="h-3 bg-[#2A3942] rounded w-16" />
                     </div>
                   </div>
+                ))}
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="text-center text-[#8696A0] py-8">
+                <p className="text-sm sm:text-base">No messages in this conversation</p>
+              </div>
+            ) : (
+              <div className="space-y-2 w-full">
+                {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
+                  <div key={date} className="w-full">
+                    {/* Date Header */}
+                    <div className="flex justify-center my-3 sm:my-4">
+                      <div className="bg-[#182229] px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow">
+                        <span className="text-[#8696A0] text-xs font-medium">{date}</span>
+                      </div>
+                    </div>
 
-                  {/* Messages for this date */}
-                  <div className="space-y-1">
-                    {msgs.map((message, index) => {
-                      const isOutgoing = message.id.startsWith('frontend-');
-                      const prevMessage = msgs[index - 1];
-                      const isFirstInGroup = !prevMessage || (prevMessage.id.startsWith('frontend-') !== isOutgoing);
+                    {/* Messages for this date */}
+                    <div className="space-y-1 w-full">
+                      {msgs.map((message, index) => {
+                        const isOutgoing = message.id.startsWith('frontend-');
+                        const prevMessage = msgs[index - 1];
+                        const isFirstInGroup = !prevMessage || (prevMessage.id.startsWith('frontend-') !== isOutgoing);
 
-                      return (
-                        <div
-                          key={message.id}
-                          className={cn(
-                            "flex w-full",
-                            isOutgoing ? "justify-end" : "justify-start",
-                            isFirstInGroup ? "mt-2" : "mt-1"
-                          )}
-                        >
+                        return (
                           <div
+                            key={message.id}
                             className={cn(
-                              "relative max-w-[65%] px-3 py-2 shadow-sm text-white",
-                              isOutgoing
-                                ? "bg-[#005C4B] text-[#E9EDEF]"
-                                : "bg-[#202C33] text-[#E9EDEF]",
-                              "rounded-lg",
-                              isOutgoing ?
-                                { 'rounded-tr-none': isFirstInGroup, 'rounded-tr-sm': !isFirstInGroup } :
-                                { 'rounded-tl-none': isFirstInGroup, 'rounded-tl-sm': !isFirstInGroup }
+                              "flex w-full px-2 sm:px-0",
+                              isOutgoing ? "justify-end" : "justify-start",
+                              isFirstInGroup ? "mt-2" : "mt-1"
                             )}
                           >
-                            {/* Render tail only for the first message in a group */}
-                            {isFirstInGroup && (
-                              isOutgoing ? <TailOutgoing /> : <TailIncoming />
-                            )}
+                            <div
+                              className={cn(
+                                "relative max-w-[85%] sm:max-w-[75%] md:max-w-[65%] px-2 sm:px-3 py-2 shadow-sm text-white",
+                                isOutgoing
+                                  ? "bg-[#005C4B] text-[#E9EDEF]"
+                                  : "bg-[#202C33] text-[#E9EDEF]",
+                                "rounded-lg",
+                                isOutgoing ?
+                                  { 'rounded-tr-none': isFirstInGroup, 'rounded-tr-sm': !isFirstInGroup } :
+                                  { 'rounded-tl-none': isFirstInGroup, 'rounded-tl-sm': !isFirstInGroup }
+                              )}
+                            >
+                              {/* Render tail only for the first message in a group */}
+                              {isFirstInGroup && (
+                                isOutgoing ? <TailOutgoing /> : <TailIncoming />
+                              )}
 
-                            <div className="flex flex-col">
-                              <p className="text-sm leading-relaxed" style={{ wordBreak: 'break-word' }}>
-                                {message.text}
-                              </p>
-                              <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0] self-end mt-1">
-                                <span>{new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false
-                                })}</span>
-                                {isOutgoing && getStatusIcon(message.status)}
+                              <div className="flex flex-col">
+                                <p 
+                                  className="text-sm leading-relaxed break-words hyphens-auto"
+                                  style={{ 
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'break-word',
+                                    hyphens: 'auto'
+                                  }}
+                                >
+                                  {message.text}
+                                </p>
+                                <div className="flex items-center justify-end gap-1 text-xs text-[#8696A0] self-end mt-1 flex-shrink-0">
+                                  <span className="whitespace-nowrap">
+                                    {new Date(parseInt(message.timestamp) * 1000).toLocaleTimeString('en-US', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: false
+                                    })}
+                                  </span>
+                                  {isOutgoing && getStatusIcon(message.status)}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+                ))}
+              </div>
+            )}
+          </div>
+        </ScrollArea>
       </div>
 
       {/* Message Input */}
-      <div className="whatsapp-input-area px-4 py-3 flex-shrink-0">
-        <div className="flex items-end space-x-3">
+      <div className="whatsapp-input-area px-2 sm:px-4 py-2 sm:py-3 flex-shrink-0">
+        <div className="flex items-end space-x-1 sm:space-x-3 w-full">
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0] flex-shrink-0"
           >
-            <Smile className="h-5 w-5" />
+            <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0]"
+            className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0] flex-shrink-0"
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <div className="flex-1 relative">
-          <textarea
+          <div className="flex-1 relative min-w-0">
+            <textarea
               ref={textareaRef}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message"
-              className="whatsapp-input rounded-lg px-4 py-2.5 resize-none w-full bg-[#2A3942] text-white placeholder-[#8696A0] focus:ring-0 focus:outline-none"
+              className="whatsapp-input rounded-lg px-3 sm:px-4 py-2 sm:py-2.5 resize-none w-full bg-[#2A3942] text-white placeholder-[#8696A0] focus:ring-0 focus:outline-none text-sm sm:text-base"
               rows={1}
-              style={{ maxHeight: '120px', overflowY: 'auto' }}
+              style={{ 
+                maxHeight: '120px', 
+                overflowY: 'auto',
+                minHeight: '32px'
+              }}
             />
           </div>
           {newMessage.trim() ? (
             <Button
               onClick={handleSendMessage}
               size="sm"
-              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-10 w-10 p-0 flex-shrink-0"
+              className="bg-[#00A884] hover:bg-[#00896b] rounded-full h-8 w-8 sm:h-10 sm:w-10 p-0 flex-shrink-0"
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           ) : (
             <Button
               variant="ghost"
               size="sm"
-              className="h-10 w-10 p-0 hover:bg-[#3C4043] text-[#8696A0] flex-shrink-0"
+              className="h-8 w-8 sm:h-10 sm:w-10 p-0 hover:bg-[#3C4043] text-[#8696A0] flex-shrink-0"
             >
-              <Mic className="h-5 w-5" />
+              <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           )}
         </div>
