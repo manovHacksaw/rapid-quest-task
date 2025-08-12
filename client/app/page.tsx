@@ -35,6 +35,8 @@ export default function WhatsAppClone() {
   const [showChat, setShowChat] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<ActiveTab>("chats")
+  const [loadingConversations, setLoadingConversations] = useState(true)
+
   const [mobileActiveTab, setMobileActiveTab] = useState<"chats" | "updates" | "communities" | "calls">("chats")
 
   useEffect(() => {
@@ -132,15 +134,19 @@ export default function WhatsAppClone() {
     }
   }, [selectedConversation, activeTab])
 
-  const fetchConversations = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/conversations`)
-      const data = await response.json()
-      setConversations(data)
-    } catch (error) {
-      console.error("Failed to fetch conversations:", error)
-    }
+ const fetchConversations = async () => {
+  try {
+    setLoadingConversations(true)
+    const response = await fetch(`${API_BASE_URL}/conversations`)
+    const data = await response.json()
+    setConversations(data)
+  } catch (error) {
+    console.error("Failed to fetch conversations:", error)
+  } finally {
+    setLoadingConversations(false)
   }
+}
+
 
   const fetchMessages = async (wa_id: string) => {
     try {
