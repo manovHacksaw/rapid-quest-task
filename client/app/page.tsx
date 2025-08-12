@@ -116,14 +116,25 @@ export default function WhatsAppClone() {
 
   // Fetch conversations on component mount
   useEffect(() => {
-    // Simulate initial app loading
-    const timer = setTimeout(() => {
-      setInitialLoading(false)
-      fetchConversations()
-      fetchAllMessages()
-    }, 1500) // 1.5 seconds loading time
+    const loadInitialData = async () => {
+      // Show loading screen while fetching data
+      setInitialLoading(true)
+      
+      try {
+        // Fetch both conversations and all messages in parallel
+        await Promise.all([
+          fetchConversations(),
+          fetchAllMessages()
+        ])
+      } catch (error) {
+        console.error("Failed to load initial data:", error)
+      } finally {
+        // Only hide loading screen after both API calls complete
+        setInitialLoading(false)
+      }
+    }
 
-    return () => clearTimeout(timer)
+    loadInitialData()
   }, [])
 
   // Fetch messages when conversation is selected
@@ -134,19 +145,18 @@ export default function WhatsAppClone() {
     }
   }, [selectedConversation, activeTab])
 
- const fetchConversations = async () => {
-  try {
-    setLoadingConversations(true)
-    const response = await fetch(`${API_BASE_URL}/conversations`)
-    const data = await response.json()
-    setConversations(data)
-  } catch (error) {
-    console.error("Failed to fetch conversations:", error)
-  } finally {
-    setLoadingConversations(false)
+  const fetchConversations = async () => {
+    try {
+      setLoadingConversations(true)
+      const response = await fetch(`${API_BASE_URL}/conversations`)
+      const data = await response.json()
+      setConversations(data)
+    } catch (error) {
+      console.error("Failed to fetch conversations:", error)
+    } finally {
+      setLoadingConversations(false)
+    }
   }
-}
-
 
   const fetchMessages = async (wa_id: string) => {
     try {
@@ -237,6 +247,7 @@ export default function WhatsAppClone() {
     }
   }
 
+  // Show loading screen until initial data is loaded
   if (initialLoading) {
     return <WhatsAppLoading />
   }
@@ -254,7 +265,7 @@ export default function WhatsAppClone() {
                 conversations={conversations}
                 selectedConversation={selectedConversation}
                 onSelectConversation={setSelectedConversation}
-                loading={false}
+                loading={loadingConversations}
                 onRefresh={fetchConversations}
                 messages={allMessages}
               />
